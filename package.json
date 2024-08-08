@@ -1,0 +1,20 @@
+{
+  "name": "dogshit-stylometry",
+  "version": "1.0.0",
+  "main": "api.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "foxcassia",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "compromise": "^14.14.0",
+    "compromise-sentences": "^0.3.0",
+    "natural": "^7.1.0",
+    "retext": "^9.0.0",
+    "retext-english": "^5.0.0",
+    "retext-passive": "^5.0.0",
+    "vader-sentiment": "^1.1.3"
+  }
+}
