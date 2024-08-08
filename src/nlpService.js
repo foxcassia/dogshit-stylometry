@@ -15,21 +15,23 @@ const {defaultStopWords} = require('./constants');
   Academic Writing: Around 60-70%
 */
 exports.getLexicalDensity = (text) => {
-    const doc = nlp(text);
-    const contentWords = doc.nouns().out('array').length +
-                         doc.verbs().out('array').length +
-                         doc.adjectives().out('array').length +
-                         doc.adverbs().out('array').length;
-    const totalWords = doc.wordCount();
-    return (contentWords / totalWords).toFixed(2);
+  console.log('Calculating Lexical Density');
+  const doc = nlp(text);
+  const contentWords = doc.nouns().out('array').length +
+                        doc.verbs().out('array').length +
+                        doc.adjectives().out('array').length +
+                        doc.adverbs().out('array').length;
+  const totalWords = doc.wordCount();
+  return (contentWords / totalWords).toFixed(2);
 } 
 
 /* An Attempt to measure verbosity and purple prose */
 exports.getAdjectiveAdverbDensity= (text) => {
-    const doc = nlp(text);
-    const adjectivesAdverbs = doc.adjectives().out('array').length + doc.adverbs().out('array').length;
-    const totalWords = doc.wordCount();
-    return (adjectivesAdverbs / totalWords).toFixed(4);
+  console.log('Calculating Adjective Adverb Density');
+  const doc = nlp(text);
+  const adjectivesAdverbs = doc.adjectives().out('array').length + doc.adverbs().out('array').length;
+  const totalWords = doc.wordCount();
+  return (adjectivesAdverbs / totalWords).toFixed(4);
 }
 
 /*
@@ -42,38 +44,41 @@ exports.getAdjectiveAdverbDensity= (text) => {
   Highly Specialized Texts: 0.8
 */
 function getLexicalDiversity(text){
-    const doc = nlp(text);
-    const words = doc.terms().out('array');
-    const uniqueWords = [...new Set(words)];
-    
-    const totalWords = words.length;
-    const uniqueWordCount = uniqueWords.length;
-    
-    return uniqueWordCount / totalWords;
+  console.log('Calculating Lexical Diversity');
+  const doc = nlp(text);
+  const words = doc.terms().out('array');
+  const uniqueWords = [...new Set(words)];
+  
+  const totalWords = words.length;
+  const uniqueWordCount = uniqueWords.length;
+  
+  return uniqueWordCount / totalWords;
 }
 
 exports.getLexicalDiversityAsMovingAverageTTR = (text, windowSize = 50) => {
-    const doc = nlp(text);
-    const words = doc.terms().out('array');
-    
-    if (words.length < windowSize) {
-      return getLexicalDiversity(text).toFixed(2);
-    }
+  console.log('Calculating MATTR');
+  const doc = nlp(text);
+  const words = doc.terms().out('array');
   
-    let ttrs = [];
-    for (let i = 0; i <= words.length - windowSize; i++) {
-      const window = words.slice(i, i + windowSize);
-      const uniqueWords = [...new Set(window)];
-      ttrs.push(uniqueWords.length / window.length);
-    }
-  
-    const movingAverageTTR = ttrs.reduce((a, b) => a + b, 0) / ttrs.length;
-  
-    return movingAverageTTR.toFixed(2);
+  if (words.length < windowSize) {
+    return getLexicalDiversity(text).toFixed(2);
+  }
+
+  let ttrs = [];
+  for (let i = 0; i <= words.length - windowSize; i++) {
+    const window = words.slice(i, i + windowSize);
+    const uniqueWords = [...new Set(window)];
+    ttrs.push(uniqueWords.length / window.length);
+  }
+
+  const movingAverageTTR = ttrs.reduce((a, b) => a + b, 0) / ttrs.length;
+
+  return movingAverageTTR.toFixed(2);
 }
 
 /* Active vs Passive voice usage as percent. Most modern authors aim for 100% */
 exports.calculateActiveVoicePercentage = (text) => {
+  console.log('Calculating Voice Percent');
   const doc = nlp(text);
   const sentences = doc.sentences();
   const totalSentences = sentences.length;
@@ -152,6 +157,7 @@ function calculateReadabilityByChunks(text) {
 
 /* Readability as FleschKincaid Grade-Level score, with average across text and highest among chunks */
 exports.generateReadabilityScores = (text) => {
+  console.log('Calculating Readability');
   const readabilityScores = calculateReadability(text);
   const { highestGradeLevel, highestReadability } = calculateReadabilityByChunks(text);
 
@@ -169,6 +175,7 @@ function splitTextIntoSentences(text) {
 
 /* VADER sentiment analysis by sentence. Vaguely accurate. */
 exports.analyzeSentiment = (text) => {
+  console.log('Calculating Sentiments');
   const sentences = splitTextIntoSentences(text);
   const sentimentScores = { positive: 0, negative: 0, neutral: 0 };
 
@@ -196,6 +203,8 @@ exports.analyzeSentiment = (text) => {
 
 /* Sentence length variability to hopefully capture the pace and cadences of sentence lengths */
 exports.generateSentenceVariability = (text) => {
+  console.log('Calculating Sentence Variability');
+
   // better than compromise-sentences https://github.com/spencermountain/compromise/issues/1026
   function splitIntoSentences(text) { 
     const sentenceEndRegex = /([^.!?]+[.!?]+(?=(\s|$|["”'‘’“])))/gi;
@@ -260,6 +269,7 @@ exports.generateSentenceVariability = (text) => {
 }
 
 exports.getPosData = (text) => {
+  console.log('Calculating POS Data');
   const doc = nlp(text);
   const terms = doc.terms().out('array');
   const tagsArr = doc.out('tags');
@@ -285,46 +295,6 @@ exports.getPosData = (text) => {
   };
 }
 
-exports.generateNgramsS = (text) => {
-  const doc = nlp(text);
-  const words = doc.terms().out('array');
-
-  const ngrams = {}
-
-  for (let i = 0; i < words.length - 1; i++) {
-    const ngram = `${words[i]} ${words[i + 1]}`;
-    ngrams[ngram] = (ngrams[ngram] || 0) + 1;
-  }
-
-  for (let i = 0; i < words.length - 1; i++) {
-    const ngram = `${words[i]} ${words[i + 1]}`;
-    ngrams[ngram] = (ngrams[ngram] || 0) + 1;
-  }
-
-  for (let i = 0; i < words.length - 2; i++) {
-    const ngram = `${words[i]} ${words[i + 1]} ${words[i + 2]}`;
-    ngrams[ngram] = (ngrams[ngram] || 0) + 1;
-  }
-
-  for (let i = 0; i < words.length - 3; i++) {
-    const ngram = `${words[i]} ${words[i + 1]} ${words[i + 2]} ${words[i + 3]}`;
-    ngrams[ngram] = (ngrams[ngram] || 0) + 1;
-  }
-
-  for (let i = 0; i < words.length - 4; i++) {
-    const ngram = `${words[i]} ${words[i + 1]} ${words[i + 2]} ${words[i + 3]} ${words[i + 4]}`;
-    ngrams[ngram] = (ngrams[ngram] || 0) + 1;
-  }
-
-  Object.keys(ngrams).forEach((ngram)=>{
-    if(ngrams[ngram]===1){
-      delete ngrams[ngram]
-    }
-  });
-
-  return ngrams;
-}
-
 function generateNGrams(words, n) {
   const ngrams = {};
   for (let i = 0; i <= words.length - n; i++) {
@@ -335,6 +305,7 @@ function generateNGrams(words, n) {
 }
 
 exports.compileNgrams = (text, minNgramSize = 2, maxNgramSize = 5, countQualifier = 3, returnCount = 10) => {
+  console.log('Calculating Ngrams');
   const doc = nlp(text);
   const words = doc.terms().out('array');
   const ngramsBySize = {}
